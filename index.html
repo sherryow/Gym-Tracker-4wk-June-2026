@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4-Week Gym Tracker</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #2b6cb0;
+            --primary-light: #ebf8ff;
+            --success: #38a169;
+            --success-light: #f0fff4;
+            --border-color: #e2e8f0;
+            --push-color: #dd6b20;
+            --pull-color: #3182ce;
+            --legs-color: #805ad5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a365d 0%, #2a4365 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        header h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+        }
+
+        /* Guide Grid */
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .guide-box h4 {
+            margin: 0 0 5px 0;
+            color: #fbd38d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Day Tabs/Sections */
+        .day-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border-top: 6px solid var(--border-color);
+        }
+
+        .day-section.push { border-top-color: var(--push-color); }
+        .day-section.pull { border-top-color: var(--pull-color); }
+        .day-section.legs { border-top-color: var(--legs-color); }
+
+        .day-title {
+            font-size: 1.4rem;
+            margin: 0 0 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .day-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Table Responsive Wrapper */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: #f7fafc;
+            color: var(--text-muted);
+            padding: 12px 10px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .exercise-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .target-tag {
+            display: inline-block;
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        /* Input Styles */
+        .log-cell {
+            min-width: 110px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .input-group input {
+            width: 45px;
+            padding: 6px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .input-group span {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Notes Box */
+        .notes-input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            box-sizing: border-box;
+        }
+
+        /* Progress Indicators */
+        .progress-indicator {
+            font-size: 0.75rem;
+            margin-top: 3px;
+            display: block;
+            font-weight: 600;
+            border-radius: 3px;
+            padding: 1px 4px;
+            width: fit-content;
+        }
+
+        .prog-up {
+            background-color: var(--success-light);
+            color: var(--success);
+        }
+
+        .prog-same {
+            background-color: #edf2f7;
+            color: #718096;
+        }
+
+        /* Actions Footer */
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-save {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-save:hover { background-color: #2f855a; }
+
+        .btn-clear {
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-clear:hover { background-color: #cbd5e0; }
+
+        /* Notification toast */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            right: 30px;
+            bottom: 30px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            header { padding: 15px; }
+            .guide-grid { grid-template-columns: 1fr; }
+            td, th { padding: 8px 4px; }
+            .input-group input { width: 38px; padding: 4px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>4-Week Muscle-Building Gym Tracker</h1>
+        <p style="margin:0; opacity: 0.9;">3 sessions/week | 45 mins max | Focus: chest, shoulders, arms</p>
+        
+        <div class="guide-grid">
+            <div class="guide-box">
+                <h4>Progression</h4>
+                <div>Wk1: Baseline<br>Wk2: Add Reps<br>Wk3: Add small weight<br>Wk4: Beat Wk3 safely</div>
+            </div>
+            <div class="guide-box">
+                <h4>Effort Indicator</h4>
+                <div>Stop sets 1-2 reps shy of failure. Final isolation sets can go to clean failure.</div>
+            </div>
+            <div class="guide-box">
+                <h4>Optional Runs</h4>
+                <div>Tue/Sat: 5km easy run. Drop to 1 weekly if lifting power dips.</div>
+            </div>
+            <div class="guide-box">
+                <h4>Nutrition Focus</h4>
+                <div>130-180g protein/day. If scale is flat after 10-14 days, add 200-300 kcal.</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- DAY 1: PUSH -->
+    <div class="day-section push" id="section-monday">
+        <h2 class="day-title">Monday</h2>
+        <div class="day-subtitle">Push Focus</div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Exercise</th>
+                        <th style="width: 12%;">Target</th>
+                        <th>Wk 1</th>
+                        <th>Wk 2</th>
+                        <th>Wk 3</th>
+                        <th>Wk 4</th>
+                        <th style="width: 20%;">RPE / Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="push-tbody">
+                    <!-- JS generated rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- DAY 2: PULL -->
+    <div class="day-section pull" id="section-wednesday">
+        <h2 class="day-title">Wednesday</h2>
+        <div class="day-subtitle">Pull + Arms Focus</div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Exercise</th>
+                        <th style="width: 12%;">Target</th>
+                        <th>Wk 1</th>
+                        <th>Wk 2</th>
+                        <th>Wk 3</th>
+                        <th>Wk 4</th>
+                        <th style="width: 20%;">RPE / Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="pull-tbody">
+                    <!-- JS generated rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- DAY 3: LEGS -->
+    <div class="day-section legs" id="section-friday">
+        <h2 class="day-title">Friday</h2>
+        <div class="day-subtitle">Upper + Legs Focus</div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Exercise</th>
+                        <th style="width: 12%;">Target</th>
+                        <th>Wk 1</th>
+                        <th>Wk 2</th>
+                        <th>Wk 3</th>
+                        <th>Wk 4</th>
+                        <th style="width: 20%;">RPE / Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="legs-tbody">
+                    <!-- JS generated rows -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn-clear" onclick="clearTrackerData()">Clear All Data</button>
+        <button class="btn-save" onclick="saveTrackerData()">Save Workout Logs</button>
+    </div>
+</div>
+
+<div id="toast">Changes saved to browser memory!</div>
+
+<script>
+    // Exact schema based on the "4_week_gym_tracker.xlsx" requirements
+    const programmeData = {
+        push: [
+            { id: "p1", name: "Barbell Bench Press", target: "4 x 6-8" },
+            { id: "p2", name: "Standing Barbell Overhead Press", target: "3 x 6-8" },
+            { id: "p3", name: "Incline Dumbbell Press", target: "3 x 8-10" },
+            { id: "p4", name: "Dumbbell Lateral Raise", target: "3 x 12-15" },
+            { id: "p5", name: "Cable Triceps Pushdown", target: "3 x 10-15" },
+            { id: "p6", name: "DB Overhead Triceps Extension", target: "2 x 10-12" }
+        ],
+        pull: [
+            { id: "l1", name: "Barbell Bent-Over Row", target: "4 x 6-8" },
+            { id: "l2", name: "Dumbbell Row or Cable Row", target: "3 x 8-12" },
+            { id: "l3", name: "Cable Face Pull", target: "3 x 12-15" },
+            { id: "l4", name: "Barbell Curl", target: "3 x 8-10" },
+            { id: "l5", name: "Incline Dumbbell Curl", target: "3 x 10-12" },
+            { id: "l6", name: "Hammer Curl", target: "2 x 12-15" },
+            { id: "l7", name: "Kettlebell Farmer Carry", target: "2 x 30-45s" }
+        ],
+        legs: [
+            { id: "f1", name: "Incline Barbell Bench or DB Bench", target: "4 x 8-10" },
+            { id: "f2", name: "Dumbbell Shoulder Press", target: "3 x 8-10" },
+            { id: "f3", name: "Goblet Squat or Barbell Back Squat", target: "3 x 8-10" },
+            { id: "f4", name: "Cable Chest Fly", target: "3 x 12-15" },
+            { id: "f5", name: "Dumbbell Lateral Raise", target: "3 x 15-20" },
+            { id: "f6", name: "Close-Grip Bench or Bench Dips", target: "3 x 8-12" },
+            { id: "f7", name: "Cable Curl or Dumbbell Curl", target: "3 x 10-15" }
+        ]
+    };
+
+    // Load data from LocalStorage or initialize default
+    let userLogs = JSON.parse(localStorage.getItem('gym_tracker_logs')) || {};
+
+    function initTracker() {
+        renderTable('push-tbody', programmeData.push);
+        renderTable('pull-tbody', programmeData.pull);
+        renderTable('legs-tbody', programmeData.legs);
+        calculateAllProgress();
+    }
+
+    function renderTable(tbodyId, exercises) {
+        const tbody = document.getElementById(tbodyId);
+        tbody.innerHTML = '';
+
+        exercises.forEach(ex => {
+            const row = document.createElement('tr');
+            
+            // Exercise Identity info
+            let rowHtml = `
+                <td><span class="exercise-name">${ex.name}</span></td>
+                <td><span class="target-tag">${ex.target}</span></td>
+            `;
+
+            // 4 Weeks inputs
+            for (let wk = 1; wk <= 4; wk++) {
+                const keyWeight = `${ex.id}_w_w${wk}`;
+                const keyReps = `${ex.id}_r_w${wk}`;
+                
+                const valWeight = userLogs[keyWeight] || '';
+                const valReps = userLogs[keyReps] || '';
+
+                rowHtml += `
+                    <td class="log-cell">
+                        <div class="input-group">
+                            <input type="number" step="0.5" id="${keyWeight}" placeholder="kg" value="${valWeight}" oninput="calculateRowProgress('${ex.id}')">
+                            <span>/</span>
+                            <input type="number" id="${keyReps}" placeholder="reps" value="${valReps}" oninput="calculateRowProgress('${ex.id}')">
+                        </div>
+                        <span id="prog_${ex.id}_w${wk}" class="progress-indicator"></span>
+                    </td>
+                `;
+            }
+
+            // Notes input
+            const keyNotes = `${ex.id}_notes`;
+            const valNotes = userLogs[keyNotes] || '';
+            rowHtml += `
+                <td>
+                    <input type="text" class="notes-input" id="${keyNotes}" placeholder="RPE or setup notes..." value="${valNotes}">
+                </td>
+            `;
+
+            row.innerHTML = rowHtml;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Process progress formulas week-over-week
+    function calculateRowProgress(exId) {
+        for (let wk = 2; wk <= 4; wk++) {
+            const prevWk = wk - 1;
+            
+            const currentW = parseFloat(document.getElementById(`${exId}_w_w${wk}`).value);
+            const currentR = parseFloat(document.getElementById(`${exId}_r_w${wk}`).value);
+            const prevW = parseFloat(document.getElementById(`${exId}_w_w${prevWk}`).value);
+            const prevR = parseFloat(document.getElementById(`${exId}_r_w${prevWk}`).value);
+
+            const indicatorSpan = document.getElementById(`prog_${exId}_w${wk}`);
+            indicatorSpan.className = 'progress-indicator'; // clear
+            indicatorSpan.innerText = '';
+
+            // Check if current week and previous week have completed data to form a baseline
+            if (!isNaN(currentW) && !isNaN(currentR) && !isNaN(prevW) && !isNaN(prevR)) {
+                
+                if (currentW > prevW) {
+                    indicatorSpan.innerText = `▲ +${(currentW - prevW)} kg`;
+                    indicatorSpan.classList.add('prog-up');
+                } else if (currentW === prevW && currentR > prevR) {
+                    indicatorSpan.innerText = `▲ +${(currentR - prevR)} reps`;
+                    indicatorSpan.classList.add('prog-up');
+                } else if (currentW === prevW && currentR === prevR) {
+                    indicatorSpan.innerText = `═ Matched`;
+                    indicatorSpan.classList.add('prog-same');
+                } else {
+                    // Handled if weight or rep drops (Left blank or managed implicitly)
+                    indicatorSpan.innerText = ``;
+                }
+            }
+        }
+    }
+
+    function calculateAllProgress() {
+        const allSections = [...programmeData.push, ...programmeData.pull, ...programmeData.legs];
+        allSections.forEach(ex => calculateRowProgress(ex.id));
+    }
+
+    function saveTrackerData() {
+        const allSections = [...programmeData.push, ...programmeData.pull, ...programmeData.legs];
+        
+        allSections.forEach(ex => {
+            // Save weeks fields
+            for (let wk = 1; wk <= 4; wk++) {
+                const wKey = `${ex.id}_w_w${wk}`;
+                const rKey = `${ex.id}_r_w${wk}`;
+                userLogs[wKey] = document.getElementById(wKey).value;
+                userLogs[rKey] = document.getElementById(rKey).value;
+            }
+            // Save notes
+            const nKey = `${ex.id}_notes`;
+            userLogs[nKey] = document.getElementById(nKey).value;
+        });
+
+        localStorage.setItem('gym_tracker_logs', JSON.stringify(userLogs));
+        showToast();
+    }
+
+    function clearTrackerData() {
+        if(confirm("Are you sure you want to completely clear out your current 4-week logs?")) {
+            localStorage.removeItem('gym_tracker_logs');
+            userLogs = {};
+            initTracker();
+        }
+    }
+
+    function showToast() {
+        const toast = document.getElementById("toast");
+        toast.className = "show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    // Kickoff layout initialization on window load
+    window.onload = initTracker;
+</script>
+
+</body>
+</html>
